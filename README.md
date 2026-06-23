@@ -1,6 +1,6 @@
 # How to use
 
-- [Download the extension on Firefox](https://addons.mozilla.org/addon/agechecker-net-bypass?utm_source=github_readme). It will only work on Firefox and firefox based browsers, like Tor or Librewolf. It will NOT work on Chrome, even if you sideload it.
+- ~~[Download the extension on Firefox](https://addons.mozilla.org/addon/agechecker-net-bypass?utm_source=github_readme)~~ **Not yet available. Please wait for the mozilla add-ons team to review it, or sideload it from the [releases page](https://github.com/helloyanis/agechecker.net-bypass/releases/tag/v1.0.0)**. It will only work on Firefox and firefox based browsers, like Tor or Librewolf. It will NOT work on Chrome, even if you sideload it.
 - Make sure it is allowed to run on all websites (or at least on the website you are trying to use it on), and in private browsing mode if you use it, from the extension settings.
 - Try to access a page gated by agechecker.net. The popup will not appear and you will be directly let through. You can try on [ageChecker's demo page](https://agechecker.net/demo)
 
@@ -10,7 +10,7 @@ It's a proof of conept to show that age verification online is not a good idea. 
 
 By using this extension, you are saving yourself from being in one of these breaches.
 
-Also, it is technically almost never doable. This add-on is less than 10kb and can still bypass the verification process. It can be unsafe, but it's not the role of the laws or dedicated platforms to know if someone's above legal age or not. People who want to bypass it for privacy reasons, will either go on less secure and less moderated websites and get exposed to potentially illegal content, or find a way to get around the verification wall.
+Also, it is technically almost never doable. This add-on is less than 10kb and can still bypass the verification process. It can be unsafe, but it's not the role of the laws or dedicated platforms to know if someone's above legal age or not. People who want to bypass it for privacy reasons (or because they are children), will either go on less secure and less moderated websites and get exposed to potentially illegal content, or find a way to get around the verification wall, by using a tool like this one or a friend / parent's ID.
 
 # How it works?
 

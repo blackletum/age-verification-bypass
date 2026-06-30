@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Age verification bypass",
-    "version": "1.0.2",
-    "description": "Skips the verification screens of various age verification platforms! Currently supports agechecker.net and ageverif.com",
+    "version": "1.0.3",
+    "description": "Skips the age verification screens on various platforms!",
     "author": "🦊 helloyanis",
     "developer": {
         "name": "🦊 helloyanis",
@@ -19,15 +19,18 @@
     "permissions": [
         "webRequest",
         "webRequestBlocking",
-        "webRequestFilterResponse"
+        "webRequestFilterResponse",
+        "scripting"
     ],
     "host_permissions": [
         "<all_urls>"
     ],
     "background": {
         "scripts": [
+            "common.js",
             "websites/agechecker.net.js",
-            "websites/ageverif.com.js"
+            "websites/ageverif.com.js",
+            "websites/reddit.com.js"
         ]
     },
     "action": {

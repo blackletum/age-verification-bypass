@@ -8,11 +8,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-console.log("agechecker.net bypass script is running");
+// This script is a template that you can base other websites on.
+console.log("Template bypass script is running");
 browser.webRequest.onBeforeRequest.addListener(
-    function (details) {
+    async function (details) {
         console.log("Request intercepted:", details.url);
 
+
+        // TO MODIFY RESPONSE and spoof your own age verification modal
         const filter = browser.webRequest.filterResponseData(details.requestId);
 
         let decoder = new TextDecoder("utf-8");
@@ -20,43 +23,23 @@ browser.webRequest.onBeforeRequest.addListener(
 
         filter.onstop = async () => {
             // Replace the original age verif popup with this one
-            const modifiedResponse = encoder.encode(`(function (w) {
-  const config = w.AgeCheckerConfig || {};
-
-  function complete() {
-    // Redirect takes priority
-    if (config.redirect_url) {
-      w.location.href = config.redirect_url;
-      return;
-    }
-
-    // Otherwise trigger onclosed callback
-    if (typeof config.onclosed === 'function') {
-      config.onclosed();
-    }
-  }
-
-  // Expose API expected by the loader
-  w.AgeCheckerAPI = {
-    show: function () {
-      complete();
-    },
-
-    close: function () {
-      complete();
-    }
-  };
-
-  // Notify loader that the script is ready
-  if (typeof config.onready === 'function') {
-    config.onready();
-  }
-})(window);`);
+            const modifiedResponse = encoder.encode(`Here, replace the server response with whatever you write here!`);
             filter.write(modifiedResponse);
             filter.close()
         }
 
+        // TO RUN SCRIPTS ON THE PAGE WHEN THE REQUEST FIRES
+        await browser.scripting.executeScript({
+        target: {
+            tabId: details.tabId, // The tab that initiated the request!
+        },
+        func: () => {
+            //your code goes here!
+            document.body.style.border = "5px solid green";
+        },
+        });
+
     },
-    { urls: ["https://cdn.agechecker.net/static/popup/v1/popup.js"]},
+    { urls: ["https://cdn.agechecker.net/static/popup/v1/popup.js"]}, // The URL that will trigger the above code
     ["blocking"]
 );

@@ -18,7 +18,8 @@ browser.webRequest.onBeforeRequest.addListener(
             tabId: details.tabId,
         },
         func: () => {
-            const blockedId = "configured-xpromo-blocking_xpromo_nsfw_blocking_desktop";
+            const blockedId = "configured-xpromo-blocking_xpromo_nsfw_blocking_desktop"; //Subreddit popup
+            const promptContainerTagName = "xpromo-nsfw-blocking-container" //Standalone post popup
 
             // Check if the popup gets added to the page
             const observer = new MutationObserver((mutations) => {
@@ -27,15 +28,25 @@ browser.webRequest.onBeforeRequest.addListener(
                 if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
                 // Check the node itself
+            
                 if (node.id === blockedId) {
                     node.remove();
                     continue;
+                }
+
+                // Standalone posts
+                if(node.tagName === promptContainerTagName) {
+                    node.shadowRoot.querySelector(".prompt").remove()
                 }
 
                 // Check descendants
                 const target = node.querySelector?.(`#${CSS.escape(blockedId)}`);
                 if (target) {
                     target.remove();
+                }
+                const target2 = node.querySelector?.(promptContainerTagName)
+                if(target2){
+                    target2.shadowRoot.querySelector(".prompt").remove()
                 }
                 }
             }
@@ -49,6 +60,9 @@ browser.webRequest.onBeforeRequest.addListener(
             // If the element is already there, just remove it
             if(document.getElementById(blockedId)){
                 document.getElementById(blockedId).remove()
+            }
+            if(document.querySelector(promptContainerTagName)){
+                document.querySelector(promptContainerTagName).shadowRoot.querySelector(".prompt").remove()
             }
         },
         });

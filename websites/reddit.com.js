@@ -69,6 +69,6 @@ browser.webRequest.onBeforeRequest.addListener(
         });
 
     },
-    { urls: ["*://*.cf.preview.redd.it/*"]},
+    { urls: ["*://*.cf.preview.redd.it/*","https://www.redditstatic.com/shreddit/*"]},
     []
 );

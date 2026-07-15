@@ -10,6 +10,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 
 console.log("Bluesky bypass script is running");
+
+// Sensitive posts
 browser.webRequest.onBeforeRequest.addListener(
     async function (details) {
         console.log("Request intercepted:", details.url);
@@ -27,7 +29,6 @@ browser.webRequest.onBeforeRequest.addListener(
         filter.onstop = async () => {
             try {
                 let jsonData = JSON.parse(response);
-                console.log("Original JSON data:", jsonData);
                 jsonData.views.forEach(view => {
                     view.policies.labelValueDefinitions = []
                     view.policies.labelValues.forEach(label => {
@@ -48,7 +49,7 @@ browser.webRequest.onBeforeRequest.addListener(
                 filter.write(encoder.encode(JSON.stringify(jsonData)));
                 filter.close()
             } catch (error) {
-                console.error("Error parsing JSON:", error);
+                console.warn("Data is not valid JSON:", error);
                 filter.write(encoder.encode(response));
                 filter.close();
             }
@@ -56,5 +57,40 @@ browser.webRequest.onBeforeRequest.addListener(
 
     },
     { urls: ["*://public.api.bsky.app/xrpc/app.bsky.labeler.getServices?*"] },
+    ["blocking"]
+);
+
+// Age assurance config request (the one that completely blocks the site)
+browser.webRequest.onBeforeRequest.addListener(
+    async function (details) {
+        console.log("Request intercepted:", details.url);
+
+        const filter = browser.webRequest.filterResponseData(details.requestId);
+
+        let decoder = new TextDecoder("utf-8");
+        let encoder = new TextEncoder();
+
+        let response = '';
+        filter.ondata = event => {
+            response += decoder.decode(event.data, { stream: true });
+        };
+
+
+        filter.onstop = async () => {
+            try {
+                let jsonData = JSON.parse(response);
+                console.log("Original JSON data:", jsonData);
+                jsonData.regions = []
+                filter.write(encoder.encode(JSON.stringify(jsonData)));
+                filter.close()
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                filter.write(encoder.encode(response));
+                filter.close();
+            }
+        }
+
+    },
+    { urls: ["*://public.api.bsky.app/xrpc/app.bsky.ageassurance.getConfig"] },
     ["blocking"]
 );

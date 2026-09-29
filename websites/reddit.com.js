@@ -74,6 +74,15 @@ browser.webRequest.onBeforeRequest.addListener(
                 }
                 Array.from(document.querySelectorAll("style")).filter(item => item.innerText?.includes(".rpl-scroll-lock"))[0]?.remove()
 
+                // If should unblur media on reddit, remove the style that blurs media
+                browser.storage.local.get('redditSetting').then((result) => {
+                    if (result['redditSetting'] === "unblur") {
+                        Array.from(document.querySelectorAll("shreddit-blurred-container[blurred]")).forEach(container => {
+                            container.removeAttribute("blurred");
+                        });
+                    }
+                });
+
             },
         });
 

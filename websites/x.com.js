@@ -162,29 +162,29 @@ browser.webRequest.onBeforeRequest.addListener(
     ["blocking"]
 );
 
-// Logged out page (can't bypass, needs user to log in)
+// Logged out page (can't bypass, needs user to log in) Currently commented out as this image loads sometimes even on logged in pages
 
-browser.webRequest.onBeforeRequest.addListener(
-    async function (details) {
-        console.log("Request intercepted:", details.url);
-        // Not actually a bypass, but a notification to let people know they can use tor to bypass it because it's just a geographical ip block
+// browser.webRequest.onBeforeRequest.addListener(
+//     async function (details) {
+//         console.log("Request intercepted:", details.url);
+//         // Not actually a bypass, but a notification to let people know they can use log in to bypass it
 
-        const hasPermission = await browser.permissions.contains({
-            permissions: ["notifications"]
-        });
+//         const hasPermission = await browser.permissions.contains({
+//             permissions: ["notifications"]
+//         });
 
-        if (hasPermission) {
-            const notificationId = "twitter-bypass-notification";
-            const notificationOptions = {
-                type: "basic",
-                title: "You can bypass this age verification",
-                message: "Keep this extension installed and log in to X.com to bypass the age verification on this site. ",
-                contextMessage: "This notification was shown by the Age Verification Bypass extension. To disable them, click the extension icon and uncheck the 'Show notification when a bypass is known for a site you visit' option.",
-            };
+//         if (hasPermission) {
+//             const notificationId = "twitter-bypass-notification";
+//             const notificationOptions = {
+//                 type: "basic",
+//                 title: "You can bypass this age verification",
+//                 message: "Keep this extension installed and log in to X.com to bypass the age verification on this site. ",
+//                 contextMessage: "This notification was shown by the Age Verification Bypass extension. To disable them, click the extension icon and uncheck the 'Show notification when a bypass is known for a site you visit' option.",
+//             };
 
-            await browser.notifications.create(notificationId, notificationOptions);
-        }
+//             await browser.notifications.create(notificationId, notificationOptions);
+//         }
 
-    },
-    { urls: ["https://pbs.twimg.com/media/GxJIrSUagAAK-ZP?format=jpg&name=240x240"] }
-);
+//     },
+//     { urls: ["https://pbs.twimg.com/media/GxJIrSUagAAK-ZP?format=jpg&name=240x240"] }
+// );

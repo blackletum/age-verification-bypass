@@ -35,4 +35,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             await browser.permissions.remove({ permissions: ["notifications"] });
         }
     });
-});
+
+    // Initialize the settings in the popup based on stored values
+    const bskySetting = await browser.storage.local.get('bskySetting').then((result) => result['bskySetting']);
+    if (bskySetting) {
+        document.querySelector("select[name='bskySetting']").value = bskySetting;
+    }
+
+    const redditSetting = await browser.storage.local.get('redditSetting').then((result) => result['redditSetting']);
+    if (redditSetting) {
+        document.querySelector("select[name='redditSetting']").value = redditSetting;
+    }
+
+    // Add event listeners to the select elements to update settings when changed
+    document.querySelectorAll("select[settingChange]").forEach(setting => {
+        setting.addEventListener("change", async (event) => {
+            await browser.runtime.sendMessage({
+                action: 'updateSetting',
+                key: event.target.getAttribute("name"),
+                value: event.target.value
+            });
+        });
+    });
+})

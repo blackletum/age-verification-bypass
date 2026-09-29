@@ -29,12 +29,13 @@ browser.webRequest.onBeforeRequest.addListener(
         filter.onstop = async () => {
             try {
                 let jsonData = JSON.parse(response);
+                const blurSetting = await browser.storage.local.get('bskySetting').then((result) => result['bskySetting']);
                 jsonData.views.forEach(view => {
                     view.policies.labelValueDefinitions = []
                     view.policies.labelValues.forEach(label => {
                         view.policies.labelValueDefinitions.push({
                             adultOnly: false,
-                            blurs: "media",
+                            blurs: blurSetting,
                             defaultSetting: "show",
                             identifier: label,
                             locales: [{

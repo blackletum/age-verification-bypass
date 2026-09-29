@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Age verification bypass",
-    "version": "1.2.4",
+    "version": "1.3.0",
     "description": "Skips the age verification screens on various platforms!",
     "author": "🦊 helloyanis",
     "developer": {
@@ -24,7 +24,8 @@
         "webRequest",
         "webRequestBlocking",
         "webRequestFilterResponse",
-        "scripting"
+        "scripting",
+        "storage"
     ],
     "optional_permissions": [
         "notifications"
@@ -34,6 +35,7 @@
     ],
     "background": {
         "scripts": [
+            "settings.js",
             "websites/agechecker.net.js",
             "websites/agego.com.js",
             "websites/ageverif.com.js",

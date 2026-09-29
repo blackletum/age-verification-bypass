@@ -32,6 +32,25 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             <label for="bypassNotificationCheckbox">Show notification when a bypass is known for a site you visit
                 (recommended)</label>
         </div>
+        <div class="surface settings">
+            <div>
+            <label for="blueskyBehaviorSelect">Bluesky behavior:</label>
+            <select id="blueskyBehaviorSelect" name="bskySetting" settingChange>
+                <option value="media">Show text, hide media (Default)</option>
+                <option value="none">Show everything</option>
+                <option value="content">Hide everything</option>
+            </select>
+            <p>❗ Need to clear browsing data or use a new private browsing window for this change to take effect</p>
+            </div>
+            
+            <div>
+            <label for="redditBehaviorSelect">Reddit behavior:</label>
+            <select id="redditBehaviorSelect" name="redditSetting" settingChange>
+                <option value="blur">Blur media (Default)</option>
+                <option value="unblur">Show everything</option>
+            </select>
+            </div>
+        </div>
         <div class="surface">
             <p>Do you need any help? <a href="https://github.com/helloyanis/age-verification-bypass/wiki/Usage"
                     target="_blank">Read the docs</a>, <a href="https://discord.gg/zUq5de7bTU" target="_blank">join

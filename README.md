@@ -24,7 +24,8 @@
 - **[Reddit](https://reddit.com)** for viewing NSFW subreddits *(can't be found with Reddit search, need a link!)* and posts. Log out to see them! *(It's a clunky solution, I recommend you use [redlib](https://redlib.catsarch.com/) for a fully private Reddit front-end where you can view NSFW posts!)*
 - **[Spankbang](https://spankbang.com)** for viewing videos even when logged out
 - **[Veriff](https://veriff.com)** (Supports only a few sites using it! Try, but don't expect it to work!)
-- [BETA, Not released yet] **[X.com / Twitter](https://x.com)** for viewing sensitive posts (Needs to be logged in to an account!)
+- **[X.com / Twitter](https://x.com)** for viewing sensitive posts (Needs to be logged in to an account!)
+- [BETA, Not on store yet] **[Redgifs](https://redgifs.com)** for viewing the unrestricted version in blocked countries and regions
 
 > [!NOTE]
 > Have enough of ID age verification? Check out [this European Citizen's Initiative](https://furries.club/@helloyanis/117212986487046806) asking to stop killing the internet!

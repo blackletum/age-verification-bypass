@@ -72,29 +72,46 @@ browser.webRequest.onBeforeRequest.addListener(
         filter.onstop = async () => {
             try {
                 let jsonData = JSON.parse(response);
+                // Thread posts
                 jsonData?.data?.threaded_conversation_with_injections_v2?.instructions?.forEach(instruction => {
                     if (instruction?.type === "TimelineAddEntries") {
                         instruction.entries.forEach(entry => {
                             if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
                                 // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
-                                entry.content.itemContent.tweet_results.result.__typename = "Tweet";
-                                entry.content.itemContent.tweet_results.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-                                entry.content.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
-                                delete entry.content.itemContent.tweet_results.result.tweet;
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                             }
 
                             // Replies in threads
                             entry?.content?.items?.forEach(item => {
                                 if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
                                     item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
-                                    item.item.itemContent.tweet_results.result.__typename = "Tweet";
-                                    item.item.itemContent.tweet_results.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-                                    item.item.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
-                                    delete item.item.itemContent.tweet_results.result.tweet;
                                 }
                             });
 
+                        });
+                    }
+                });
+
+                // Search results
+                jsonData?.data?.search_by_raw_query?.search_timeline?.timeline?.instructions?.forEach(instruction => {
+                    if (instruction?.type === "TimelineAddEntries") {
+                        instruction.entries.forEach(entry => {
+                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                // Remove the visibility results and set the tweet result to the tweet itself
+                                entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
+                            }
+                        });
+                    }
+                });
+
+                // Home timeline
+                jsonData?.data?.home?.home_timeline_urt?.instructions?.forEach(instruction => {
+                    if (instruction?.type === "TimelineAddEntries") {
+                        instruction.entries.forEach(entry => {
+                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                // Remove the visibility results and set the tweet result to the tweet itself
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                            }
                         });
                     }
                 });
@@ -109,7 +126,7 @@ browser.webRequest.onBeforeRequest.addListener(
         }
         
     },
-    { urls: ["https://x.com/i/api/graphql/*/TweetDetail?*"] },
+    { urls: ["https://x.com/i/api/graphql/*/TweetDetail?*", "https://x.com/i/api/graphql/*/SearchTimeline?*", "https://x.com/i/api/graphql/*/HomeTimeline"] },
     ["blocking"]
 );
 
@@ -137,22 +154,14 @@ browser.webRequest.onBeforeRequest.addListener(
                             // Basic posts
                             if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
                                 // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
-                                entry.content.itemContent.tweet_results.result.__typename = "Tweet";
-                                entry.content.itemContent.tweet_results.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-                                entry.content.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
-                                delete entry.content.itemContent.tweet_results.result.tweet;
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                             }
 
                             // Retweets
                             if (entry?.content?.items?.length > 0) {
                                 entry.content.items.forEach(item => {
                                     if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
-                                        item.item.itemContent.tweet_results.result.__typename = "Tweet";
-                                        item.item.itemContent.tweet_results.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-                                        item.item.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
-                                        delete item.item.itemContent.tweet_results.result.tweet;
+                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
                                     }
                                 });
                             }
@@ -173,6 +182,17 @@ browser.webRequest.onBeforeRequest.addListener(
     { urls: ["https://x.com/i/api/graphql/*/UserOriginalsTimeline?*", "https://x.com/i/api/graphql/*/UserTweetsAndReplies?*"] },
     ["blocking"]
 );
+
+function unblurTweet(tweet) {
+    if (tweet?.__typename === "TweetWithVisibilityResults") {
+        tweet = { ...tweet.tweet };
+        tweet.__typename = "Tweet";
+        tweet.core.user_results.result.profile_metadata.profile_interstitial_type = "";
+        tweet.legacy.possibly_sensitive = false;
+        delete tweet.tweet;
+    }
+    return tweet;
+}
 
 // Logged out page (can't bypass, needs user to log in) Currently commented out as this image loads sometimes even on logged in pages
 

@@ -83,6 +83,18 @@ browser.webRequest.onBeforeRequest.addListener(
                                 entry.content.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
                                 delete entry.content.itemContent.tweet_results.result.tweet;
                             }
+
+                            // Replies in threads
+                            entry?.content?.items?.forEach(item => {
+                                if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                    item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
+                                    item.item.itemContent.tweet_results.result.__typename = "Tweet";
+                                    item.item.itemContent.tweet_results.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
+                                    item.item.itemContent.tweet_results.result.legacy.possibly_sensitive = false;
+                                    delete item.item.itemContent.tweet_results.result.tweet;
+                                }
+                            });
+
                         });
                     }
                 });

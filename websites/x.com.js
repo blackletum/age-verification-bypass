@@ -99,7 +99,7 @@ browser.webRequest.onBeforeRequest.addListener(
                                     // Replies in threads
                                     entry?.content?.items?.forEach(item => {
                                         if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                            item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
+                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
                                         }
                                     });
 
@@ -113,11 +113,11 @@ browser.webRequest.onBeforeRequest.addListener(
                                 instruction.entries.forEach(entry => {
                                     if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
                                         // Remove the visibility results and set the tweet result to the tweet itself
-                                        entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                     }
                                     // Quoted posts
                                     if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
                                     }
                                 });
                             }
@@ -133,7 +133,7 @@ browser.webRequest.onBeforeRequest.addListener(
                                     }
                                     // Quoted posts
                                     if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
                                     }
                                 });
                             }
@@ -149,7 +149,7 @@ browser.webRequest.onBeforeRequest.addListener(
                                     }
                                     // Quoted posts
                                     if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
                                     }
                                 });
                             }

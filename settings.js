@@ -23,6 +23,12 @@ async function initializeSettings() {
     if(!redditSetting){
         browser.storage.local.set({ 'redditSetting': "blur" }); //Default to blurring media on reddit
     }
+
+    // Twitter
+    let twitterSetting = await browser.storage.local.get('twitterSetting').then((result) => result['twitterSetting']);
+    if(!twitterSetting){
+        browser.storage.local.set({ 'twitterSetting': "home&following&search&bookmarks&profile" }); //Default to unblurring everything
+    }
 }
 
 initializeSettings();

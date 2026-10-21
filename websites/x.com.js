@@ -45,7 +45,7 @@ browser.webRequest.onBeforeRequest.addListener(
                 filter.close();
             }
         }
-        
+
     },
     { urls: ["https://x.com/i/api/graphql/*/TweetResultByRestId?*"] },
     ["blocking"]
@@ -70,63 +70,91 @@ browser.webRequest.onBeforeRequest.addListener(
         };
 
         filter.onstop = async () => {
-            try {
-                let jsonData = JSON.parse(response);
-                // Thread posts
-                jsonData?.data?.threaded_conversation_with_injections_v2?.instructions?.forEach(instruction => {
-                    if (instruction?.type === "TimelineAddEntries") {
-                        instruction.entries.forEach(entry => {
-                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                            }
+            browser.storage.local.get('twitterSetting').then((result) => {
+                const twitterSetting = result['twitterSetting'];
+                if (twitterSetting &&
+                    twitterSetting.includes("home") && details.url.includes("HomeTimeline") ||
+                    twitterSetting.includes("following") && details.url.includes("HomeLatestTimeline") ||
+                    twitterSetting.includes("search") && details.url.includes("SearchTimeline") ||
+                    twitterSetting.includes("bookmarks") && details.url.includes("Bookmarks") ||
+                    twitterSetting.includes("profile") && (details.url.includes("UserOriginalsTimeline") || details.url.includes("UserTweetsAndReplies")) ||
+                    details.url.includes("TweetDetail")
+                ) {
+                    try {
+                        let jsonData = JSON.parse(response);
+                        // Thread posts
+                        jsonData?.data?.threaded_conversation_with_injections_v2?.instructions?.forEach(instruction => {
+                            if (instruction?.type === "TimelineAddEntries") {
+                                instruction.entries.forEach(entry => {
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                        // Remove the visibility results and set the tweet result to the tweet itself
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
 
-                            // Replies in threads
-                            entry?.content?.items?.forEach(item => {
-                                if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                    item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
-                                }
-                            });
+                                    // Replies in threads
+                                    entry?.content?.items?.forEach(item => {
+                                        if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                            item.item.itemContent.tweet_results.result = { ...item.item.itemContent.tweet_results.result.tweet };
+                                        }
+                                    });
 
-                        });
-                    }
-                });
-
-                // Search results
-                jsonData?.data?.search_by_raw_query?.search_timeline?.timeline?.instructions?.forEach(instruction => {
-                    if (instruction?.type === "TimelineAddEntries") {
-                        instruction.entries.forEach(entry => {
-                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
-                            }
-                        });
-                    }
-                });
-
-                // Home timeline
-                jsonData?.data?.home?.home_timeline_urt?.instructions?.forEach(instruction => {
-                    if (instruction?.type === "TimelineAddEntries") {
-                        instruction.entries.forEach(entry => {
-                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                });
                             }
                         });
+
+                        // Search results
+                        jsonData?.data?.search_by_raw_query?.search_timeline?.timeline?.instructions?.forEach(instruction => {
+                            if (instruction?.type === "TimelineAddEntries") {
+                                instruction.entries.forEach(entry => {
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                        // Remove the visibility results and set the tweet result to the tweet itself
+                                        entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
+                                    }
+                                });
+                            }
+                        });
+
+                        // Home & following timeline
+                        jsonData?.data?.home?.home_timeline_urt?.instructions?.forEach(instruction => {
+                            if (instruction?.type === "TimelineAddEntries") {
+                                instruction.entries.forEach(entry => {
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                        // Remove the visibility results and set the tweet result to the tweet itself
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
+                                });
+                            }
+                        });
+
+                        // Bookmarks
+                        jsonData?.data?.bookmarks_timeline_v2?.timeline?.instructions?.forEach(instruction => {
+                            if (instruction?.type === "TimelineAddEntries") {
+                                instruction.entries.forEach(entry => {
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                        // Remove the visibility results and set the tweet result to the tweet itself
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
+                                });
+                            }
+                        });
+                        console.log("Modified JSON data:", jsonData);
+                        filter.write(encoder.encode(JSON.stringify(jsonData)));
+                        filter.close();
+                    } catch (error) {
+                        console.warn("Data is not valid JSON:", error);
+                        filter.write(encoder.encode(response));
+                        filter.close();
                     }
-                });
-                console.log("Modified JSON data:", jsonData);
-                filter.write(encoder.encode(JSON.stringify(jsonData)));
-                filter.close();
-            } catch (error) {
-                console.warn("Data is not valid JSON:", error);
-                filter.write(encoder.encode(response));
-                filter.close();
-            }
+                } else {
+                    console.log("Twitter setting does not match this request, passing through unmodified.");
+                    filter.write(encoder.encode(response));
+                    filter.close();
+                }
+            })
         }
-        
+
     },
-    { urls: ["https://x.com/i/api/graphql/*/TweetDetail?*", "https://x.com/i/api/graphql/*/SearchTimeline?*", "https://x.com/i/api/graphql/*/HomeTimeline"] },
+    { urls: ["https://x.com/i/api/graphql/*/TweetDetail?*", "https://x.com/i/api/graphql/*/SearchTimeline?*", "https://x.com/i/api/graphql/*/HomeTimeline", "https://x.com/i/api/graphql/*/HomeLatestTimeline", "https://x.com/i/api/graphql/*/Bookmarks?*"] },
     ["blocking"]
 );
 
@@ -146,38 +174,45 @@ browser.webRequest.onBeforeRequest.addListener(
         };
 
         filter.onstop = async () => {
-            try {
-                let jsonData = JSON.parse(response);
-                jsonData?.data?.user?.result?.timeline?.timeline?.instructions?.forEach(instruction => {
-                    if (instruction?.type === "TimelineAddEntries") {
-                        instruction.entries.forEach(entry => {
-                            // Basic posts
-                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                            }
+            const twitterSetting = await browser.storage.local.get('twitterSetting').then((result) => result['twitterSetting']);
+            if (twitterSetting && twitterSetting.includes("profile")) {
+                try {
+                    let jsonData = JSON.parse(response);
+                    jsonData?.data?.user?.result?.timeline?.timeline?.instructions?.forEach(instruction => {
+                        if (instruction?.type === "TimelineAddEntries") {
+                            instruction.entries.forEach(entry => {
+                                // Basic posts
+                                if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                    // Remove the visibility results and set the tweet result to the tweet itself
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                }
 
-                            // Retweets
-                            if (entry?.content?.items?.length > 0) {
-                                entry.content.items.forEach(item => {
-                                    if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-                console.log("Modified JSON data:", jsonData);
-                filter.write(encoder.encode(JSON.stringify(jsonData)));
-                filter.close();
-            } catch (error) {
-                console.warn("Data is not valid JSON:", error);
+                                // Retweets
+                                if (entry?.content?.items?.length > 0) {
+                                    entry.content.items.forEach(item => {
+                                        if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    console.log("Modified JSON data:", jsonData);
+                    filter.write(encoder.encode(JSON.stringify(jsonData)));
+                    filter.close();
+                } catch (error) {
+                    console.warn("Data is not valid JSON:", error);
+                    filter.write(encoder.encode(response));
+                    filter.close();
+                }
+            } else {
+                console.log("Twitter setting does not match this request, passing through unmodified.");
                 filter.write(encoder.encode(response));
                 filter.close();
             }
         }
-        
+
     },
     { urls: ["https://x.com/i/api/graphql/*/UserOriginalsTimeline?*", "https://x.com/i/api/graphql/*/UserTweetsAndReplies?*"] },
     ["blocking"]
@@ -193,30 +228,3 @@ function unblurTweet(tweet) {
     }
     return tweet;
 }
-
-// Logged out page (can't bypass, needs user to log in) Currently commented out as this image loads sometimes even on logged in pages
-
-// browser.webRequest.onBeforeRequest.addListener(
-//     async function (details) {
-//         console.log("Request intercepted:", details.url);
-//         // Not actually a bypass, but a notification to let people know they can use log in to bypass it
-
-//         const hasPermission = await browser.permissions.contains({
-//             permissions: ["notifications"]
-//         });
-
-//         if (hasPermission) {
-//             const notificationId = "twitter-bypass-notification";
-//             const notificationOptions = {
-//                 type: "basic",
-//                 title: "You can bypass this age verification",
-//                 message: "Keep this extension installed and log in to X.com to bypass the age verification on this site. ",
-//                 contextMessage: "This notification was shown by the Age Verification Bypass extension. To disable them, click the extension icon and uncheck the 'Show notification when a bypass is known for a site you visit' option.",
-//             };
-
-//             await browser.notifications.create(notificationId, notificationOptions);
-//         }
-
-//     },
-//     { urls: ["https://pbs.twimg.com/media/GxJIrSUagAAK-ZP?format=jpg&name=240x240"] }
-// );

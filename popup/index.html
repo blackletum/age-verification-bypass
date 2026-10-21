@@ -33,7 +33,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 (recommended)</label>
         </div>
         <div class="surface settings">
-            <div>
+            <div class="setting">
             <label for="blueskyBehaviorSelect">Bluesky behavior:</label>
             <select id="blueskyBehaviorSelect" name="bskySetting" settingChange>
                 <option value="media">Show text, hide media (Default)</option>
@@ -43,24 +43,39 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             <p>❗ Need to clear browsing data or use a new private browsing window for this change to take effect</p>
             </div>
             
-            <div>
+            <div class="setting">
             <label for="redditBehaviorSelect">Reddit behavior:</label>
             <select id="redditBehaviorSelect" name="redditSetting" settingChange>
                 <option value="blur">Blur media (Default)</option>
                 <option value="unblur">Show everything</option>
             </select>
             </div>
+
+            <div class="setting">
+                <label for="twitterBehaviorSelect">X / Twitter behavior :</label>
+                <div><button id="unblurAllTwitterOptions">🔞 Unblur all</button> <button id="blurAllTwitterOptions">🛡️ Blur all</button></div>
+                <p>Manual setting : Select the options you want to unblur</p>
+                <select multiple id="twitterBehaviorSelect" name="twitterSetting" settingChange>
+                    <option value="home">Unblur home timeline</option>
+                    <option value="following">Unblur following timeline</option>
+                    <option value="search">Unblur search results</option>
+                    <option value="bookmarks">Unblur bookmarks</option>
+                    <option value="profile">Unblur tweets on profile pages</option>
+                </select>
+                <p>❗ On PC, use CTRL + CLICK to select multiple options</p>
+            </div>
         </div>
         <div class="surface">
             <p>Do you need any help? <a href="https://github.com/helloyanis/age-verification-bypass/wiki/Usage"
                     target="_blank">Read the docs</a>, <a href="https://discord.gg/zUq5de7bTU" target="_blank">join
-                    Discord</a>, or <a href="https://github.com/helloyanis/age-verification-bypass/issues"
+                    Discord</a>, <a href="https://matrix.to/#/#age-verification-bypass:matrix.org" target="_blank">join
+                    Matrix</a>, or <a href="https://github.com/helloyanis/age-verification-bypass/issues"
                     target="_blank">report an issue</a>.</p>
 
         </div>
     </div>
-    Made by <a href="https://🦊💻.ws">🦊 helloyanis</a>, <a rel="me" href="https://furries.club/@helloyanis">follow me
-        on Mastodon</a>!
+    <p>Made by <a href="https://🦊💻.ws">🦊 helloyanis</a>, <a rel="me" href="https://furries.club/@helloyanis">follow me
+        on Mastodon</a>!</p>
     <script src="script.js"></script>
 </body>
 

@@ -47,14 +47,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.querySelector("select[name='redditSetting']").value = redditSetting;
     }
 
+    const twitterSetting = await browser.storage.local.get('twitterSetting').then((result) => result['twitterSetting']);
+    if (twitterSetting) {
+        twitterSetting.split("&").forEach(value => {
+            const option = document.querySelector(`select[name='twitterSetting'] option[value='${value}']`);
+            if (option) {
+                option.selected = true;
+            }
+        });
+    }
+
     // Add event listeners to the select elements to update settings when changed
     document.querySelectorAll("select[settingChange]").forEach(setting => {
         setting.addEventListener("change", async (event) => {
             await browser.runtime.sendMessage({
                 action: 'updateSetting',
                 key: event.target.getAttribute("name"),
-                value: event.target.value
+                value: event.target.hasAttribute("multiple") ? Array.from(event.target.selectedOptions).map(option => option.value).join("&") : event.target.value
             });
+        });
+    });
+
+    // Add event listeners to the "Unblur all" and "Blur all" buttons for Twitter settings
+    document.getElementById("unblurAllTwitterOptions").addEventListener("click", async () => {
+        const twitterSelect = document.getElementById("twitterBehaviorSelect");
+        Array.from(twitterSelect.options).forEach(option => option.selected = true);
+        await browser.runtime.sendMessage({
+            action: 'updateSetting',
+            key: 'twitterSetting',
+            value: Array.from(twitterSelect.selectedOptions).map(option => option.value).join("&")
+        });
+    });
+
+    document.getElementById("blurAllTwitterOptions").addEventListener("click", async () => {
+        const twitterSelect = document.getElementById("twitterBehaviorSelect");
+        Array.from(twitterSelect.options).forEach(option => option.selected = false);
+        await browser.runtime.sendMessage({
+            action: 'updateSetting',
+            key: 'twitterSetting',
+            value: ''
         });
     });
 })

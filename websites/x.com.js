@@ -30,11 +30,11 @@ browser.webRequest.onBeforeRequest.addListener(
                 let jsonData = JSON.parse(response);
                 if (jsonData?.data?.tweetResult?.result?.mediaVisibilityResults) {
                     console.log("Detected NSFW post :", jsonData);
-                    jsonData.data.tweetResult.result = { ...jsonData.data.tweetResult.result.tweet };
-                    jsonData.data.tweetResult.result.__typename = "Tweet";
-                    jsonData.data.tweetResult.result.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-                    jsonData.data.tweetResult.result.legacy.possibly_sensitive = false;
-                    delete jsonData.data.tweetResult.result.tweet;
+                    jsonData.data.tweetResult.result = unblurTweet(jsonData.data.tweetResult.result);
+                }
+                if (jsonData?.data?.tweetResult?.result?.quoted_status_result.result.mediaVisibilityResults) {
+                    console.log("Detected NSFW quoted post :", jsonData);
+                    jsonData.data.tweetResult.result.quoted_status_result.result = unblurTweet(jsonData.data.tweetResult.result.quoted_status_result.result);
                 }
                 console.log("Modified JSON data:", jsonData);
                 filter.write(encoder.encode(JSON.stringify(jsonData)));
@@ -91,6 +91,11 @@ browser.webRequest.onBeforeRequest.addListener(
                                         entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                     }
 
+                                    // Quoted posts
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
+                                    }
+
                                     // Replies in threads
                                     entry?.content?.items?.forEach(item => {
                                         if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
@@ -110,6 +115,10 @@ browser.webRequest.onBeforeRequest.addListener(
                                         // Remove the visibility results and set the tweet result to the tweet itself
                                         entry.content.itemContent.tweet_results.result = { ...entry.content.itemContent.tweet_results.result.tweet };
                                     }
+                                    // Quoted posts
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
+                                    }
                                 });
                             }
                         });
@@ -122,6 +131,10 @@ browser.webRequest.onBeforeRequest.addListener(
                                         // Remove the visibility results and set the tweet result to the tweet itself
                                         entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                     }
+                                    // Quoted posts
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
+                                    }
                                 });
                             }
                         });
@@ -133,6 +146,10 @@ browser.webRequest.onBeforeRequest.addListener(
                                     if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
                                         // Remove the visibility results and set the tweet result to the tweet itself
                                         entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
+                                    // Quoted posts
+                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = { ...entry.content.itemContent.tweet_results.result.quoted_status_result.result.tweet };
                                     }
                                 });
                             }
@@ -195,7 +212,35 @@ browser.webRequest.onBeforeRequest.addListener(
                                         }
                                     });
                                 }
+
+                                // Quoted posts
+                                if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                    entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
+                                }
                             });
+                        }
+                        if (instruction?.type === "TimelinePinEntry") {
+                            // This one has a single entry instead of an array of entries
+                            const entry = instruction.entry;
+                            // Basic posts
+                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                // Remove the visibility results and set the tweet result to the tweet itself
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                            }
+
+                            // Retweets
+                            if (entry?.content?.items?.length > 0) {
+                                entry.content.items.forEach(item => {
+                                    if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                    }
+                                });
+                            }
+
+                            // Quoted posts
+                            if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+                                entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
+                            }
                         }
                     });
                     console.log("Modified JSON data:", jsonData);

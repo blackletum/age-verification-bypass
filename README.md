@@ -19,6 +19,7 @@
 - **[AgeChecker.net](https://agechecker.net/demo)** Fully bypassed, unless the site's server does a double check with the AgeChecker server
 - **[AgeGO](https://agego.com)** Basic integration bypassed, advanced integration partially bypassed, server to server mode (when you don't get a popup but are redirected to an AgeGO page) bypassed but the server usually does additional checks so it is unlikely to work.
 - **[AgeVerif.com](https://demo.ageverif.com/)** Basic and advanced integrations bypassed, not for the oAuth2 flow
+- **[AgeVerification.org](https://ageverification.org)** Fully bypassed by blocking the popup
 - **[AliExpress](https://aliexpress.com/)** for viewing items categorized as "For adults".
 - **[Bluesky](https://bsky.app)** for viewing sensitive posts without logging in. The posts are visible, and the medias are revealed by clicking on "Show" in the Sensitive Media banner. *(A side effect if this is that posts with labels from their author will appear as posts labeled by Bluesky's automoderation)*
 - **[Reddit](https://reddit.com)** for viewing NSFW subreddits *(can't be found with Reddit search, need a link!)* and posts. Log out to see them! *(It's a clunky solution, I recommend you use [redlib](https://redlib.catsarch.com/) for a fully private Reddit front-end where you can view NSFW posts!)*

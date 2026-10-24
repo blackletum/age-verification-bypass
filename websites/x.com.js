@@ -28,14 +28,7 @@ browser.webRequest.onBeforeRequest.addListener(
         filter.onstop = async () => {
             try {
                 let jsonData = JSON.parse(response);
-                if (jsonData?.data?.tweetResult?.result?.mediaVisibilityResults) {
-                    console.log("Detected NSFW post :", jsonData);
-                    jsonData.data.tweetResult.result = unblurTweet(jsonData.data.tweetResult.result);
-                }
-                if (jsonData?.data?.tweetResult?.result?.quoted_status_result.result.mediaVisibilityResults) {
-                    console.log("Detected NSFW quoted post :", jsonData);
-                    jsonData.data.tweetResult.result.quoted_status_result.result = unblurTweet(jsonData.data.tweetResult.result.quoted_status_result.result);
-                }
+                jsonData.data.tweetResult.result = unblurTweet(jsonData.data.tweetResult.result);
                 console.log("Modified JSON data:", jsonData);
                 filter.write(encoder.encode(JSON.stringify(jsonData)));
                 filter.close();
@@ -86,21 +79,12 @@ browser.webRequest.onBeforeRequest.addListener(
                         jsonData?.data?.threaded_conversation_with_injections_v2?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
                                 instruction.entries.forEach(entry => {
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        // Remove the visibility results and set the tweet result to the tweet itself
-                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                                    }
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
 
-                                    // Quoted posts
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
-                                    }
 
                                     // Replies in threads
                                     entry?.content?.items?.forEach(item => {
-                                        if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
-                                        }
+                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
                                     });
 
                                 });
@@ -111,14 +95,8 @@ browser.webRequest.onBeforeRequest.addListener(
                         jsonData?.data?.search_by_raw_query?.search_timeline?.timeline?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
                                 instruction.entries.forEach(entry => {
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        // Remove the visibility results and set the tweet result to the tweet itself
-                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                                    }
-                                    // Quoted posts
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
-                                    }
+                                    // Remove the visibility results and set the tweet result to the tweet itself
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                 });
                             }
                         });
@@ -127,14 +105,8 @@ browser.webRequest.onBeforeRequest.addListener(
                         jsonData?.data?.home?.home_timeline_urt?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
                                 instruction.entries.forEach(entry => {
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        // Remove the visibility results and set the tweet result to the tweet itself
-                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                                    }
-                                    // Quoted posts
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
-                                    }
+                                    // Remove the visibility results and set the tweet result to the tweet itself
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                 });
                             }
                         });
@@ -143,14 +115,8 @@ browser.webRequest.onBeforeRequest.addListener(
                         jsonData?.data?.bookmarks_timeline_v2?.timeline?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
                                 instruction.entries.forEach(entry => {
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        // Remove the visibility results and set the tweet result to the tweet itself
-                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                                    }
-                                    // Quoted posts
-                                    if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                        entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
-                                    }
+                                    // Remove the visibility results and set the tweet result to the tweet itself
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
                                 });
                             }
                         });
@@ -199,23 +165,14 @@ browser.webRequest.onBeforeRequest.addListener(
                         if (instruction?.type === "TimelineAddEntries") {
                             instruction.entries.forEach(entry => {
                                 // Basic posts
-                                if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                    // Remove the visibility results and set the tweet result to the tweet itself
-                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                                }
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+
 
                                 // Retweets
                                 if (entry?.content?.items?.length > 0) {
                                     entry.content.items.forEach(item => {
-                                        if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
-                                        }
+                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
                                     });
-                                }
-
-                                // Quoted posts
-                                if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                    entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
                                 }
                             });
                         }
@@ -223,23 +180,14 @@ browser.webRequest.onBeforeRequest.addListener(
                             // This one has a single entry instead of an array of entries
                             const entry = instruction.entry;
                             // Basic posts
-                            if (entry?.content?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                // Remove the visibility results and set the tweet result to the tweet itself
-                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
-                            }
+                            // Remove the visibility results and set the tweet result to the tweet itself
+                            entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
 
                             // Retweets
                             if (entry?.content?.items?.length > 0) {
                                 entry.content.items.forEach(item => {
-                                    if (item?.item?.itemContent?.tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
-                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
-                                    }
+                                    item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
                                 });
-                            }
-
-                            // Quoted posts
-                            if (entry?.content?.itemContent?.tweet_results?.result?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
-                                entry.content.itemContent.tweet_results.result.quoted_status_result.result = unblurTweet(entry.content.itemContent.tweet_results.result.quoted_status_result.result);
                             }
                         }
                     });
@@ -270,6 +218,11 @@ function unblurTweet(tweet) {
         tweet.core.user_results.result.profile_metadata.profile_interstitial_type = "";
         tweet.legacy.possibly_sensitive = false;
         delete tweet.tweet;
+    }
+
+    // Quoted posts can also be blurred, so we need to check for that as well
+    if (tweet?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
+        tweet.quoted_status_result.result = unblurTweet(tweet.quoted_status_result.result);
     }
     return tweet;
 }

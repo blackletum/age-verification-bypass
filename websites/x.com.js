@@ -78,13 +78,18 @@ browser.webRequest.onBeforeRequest.addListener(
                         // Thread posts
                         jsonData?.data?.threaded_conversation_with_injections_v2?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
-                                instruction.entries.forEach(entry => {
-                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                instruction.entries?.forEach(entry => {
+
+                                    if (entry.content?.itemContent?.tweet_results?.result) {
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
 
 
                                     // Replies in threads
                                     entry?.content?.items?.forEach(item => {
-                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                        if (item.item?.itemContent?.tweet_results?.result) {
+                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                        }
                                     });
 
                                 });
@@ -94,9 +99,11 @@ browser.webRequest.onBeforeRequest.addListener(
                         // Search results
                         jsonData?.data?.search_by_raw_query?.search_timeline?.timeline?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
-                                instruction.entries.forEach(entry => {
+                                instruction.entries?.forEach(entry => {
                                     // Remove the visibility results and set the tweet result to the tweet itself
-                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    if (entry.content?.itemContent?.tweet_results?.result) {
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
                                 });
                             }
                         });
@@ -104,9 +111,11 @@ browser.webRequest.onBeforeRequest.addListener(
                         // Home & following timeline
                         jsonData?.data?.home?.home_timeline_urt?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
-                                instruction.entries.forEach(entry => {
+                                instruction.entries?.forEach(entry => {
                                     // Remove the visibility results and set the tweet result to the tweet itself
-                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    if (entry.content?.itemContent?.tweet_results?.result) {
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
                                 });
                             }
                         });
@@ -114,9 +123,11 @@ browser.webRequest.onBeforeRequest.addListener(
                         // Bookmarks
                         jsonData?.data?.bookmarks_timeline_v2?.timeline?.instructions?.forEach(instruction => {
                             if (instruction?.type === "TimelineAddEntries") {
-                                instruction.entries.forEach(entry => {
+                                instruction.entries?.forEach(entry => {
                                     // Remove the visibility results and set the tweet result to the tweet itself
-                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    if (entry.content?.itemContent?.tweet_results?.result) {
+                                        entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                    }
                                 });
                             }
                         });
@@ -163,15 +174,19 @@ browser.webRequest.onBeforeRequest.addListener(
                     let jsonData = JSON.parse(response);
                     jsonData?.data?.user?.result?.timeline?.timeline?.instructions?.forEach(instruction => {
                         if (instruction?.type === "TimelineAddEntries") {
-                            instruction.entries.forEach(entry => {
+                            instruction.entries?.forEach(entry => {
                                 // Basic posts
-                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                if (entry.content?.itemContent?.tweet_results?.result) {
+                                    entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                                }
 
 
                                 // Retweets
                                 if (entry?.content?.items?.length > 0) {
                                     entry.content.items.forEach(item => {
-                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                        if (item.item?.itemContent?.tweet_results?.result) {
+                                            item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                        }
                                     });
                                 }
                             });
@@ -181,12 +196,16 @@ browser.webRequest.onBeforeRequest.addListener(
                             const entry = instruction.entry;
                             // Basic posts
                             // Remove the visibility results and set the tweet result to the tweet itself
-                            entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                            if (entry.content?.itemContent?.tweet_results?.result) {
+                                entry.content.itemContent.tweet_results.result = unblurTweet(entry.content.itemContent.tweet_results.result);
+                            }
 
                             // Retweets
                             if (entry?.content?.items?.length > 0) {
                                 entry.content.items.forEach(item => {
-                                    item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                    if (item.item?.itemContent?.tweet_results?.result) {
+                                        item.item.itemContent.tweet_results.result = unblurTweet(item.item.itemContent.tweet_results.result);
+                                    }
                                 });
                             }
                         }
@@ -213,16 +232,27 @@ browser.webRequest.onBeforeRequest.addListener(
 
 function unblurTweet(tweet) {
     if (tweet?.__typename === "TweetWithVisibilityResults") {
+        console.log("Unblurring tweet:", tweet);
         tweet = { ...tweet.tweet };
         tweet.__typename = "Tweet";
-        tweet.core.user_results.result.profile_metadata.profile_interstitial_type = "";
-        tweet.legacy.possibly_sensitive = false;
+        tweet.core && (tweet.core.user_results.result.profile_metadata.profile_interstitial_type = "");
+        tweet.legacy && (tweet.legacy.possibly_sensitive = false);
         delete tweet.tweet;
+        console.log("Tweet unblurred:", tweet);
     }
 
     // Quoted posts can also be blurred, so we need to check for that as well
     if (tweet?.quoted_status_result?.result?.__typename === "TweetWithVisibilityResults") {
         tweet.quoted_status_result.result = unblurTweet(tweet.quoted_status_result.result);
+    }
+    if(tweet?.quotedRefResult?.result?.__typename === "TweetWithVisibilityResults") {
+        tweet.quotedRefResult.result = unblurTweet(tweet.quotedRefResult.result);
+    }
+    if(tweet?.nested_quoted_tweet_results?.result?.__typename === "TweetWithVisibilityResults") {
+        tweet.nested_quoted_tweet_results.result = unblurTweet(tweet.nested_quoted_tweet_results.result);
+    }
+    if(tweet?.quotedRefResult?.result?.__typename === "TweetWithVisibilityResults") {
+        tweet.quotedRefResult.result.__typename = "Tweet";
     }
     return tweet;
 }

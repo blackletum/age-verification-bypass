@@ -9,164 +9,58 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 */
 
 console.log("Reddit bypass script is running");
-browser.webRequest.onBeforeRequest.addListener(
+browser.webRequest.onCompleted.addListener(
     async function (details) {
         console.log("Request intercepted:", details.url);
 
-        await browser.scripting.executeScript({
+        await browser.scripting.insertCSS({
             target: {
                 tabId: details.tabId,
             },
+            css:
+                // 18+ popup & login upsell
+                `#configured-xpromo-blocking_xpromo_nsfw_blocking_desktop, configured-xpromo-blocking_xpromo_nsfw_blocking, desktop-dynamic-upsell-dialog{
+                    display: none !important
+                }
+                `,
+            origin: "USER" // Prevent reddit from overriding it
+            
+        })
+        await browser.scripting.executeScript({
+            target: {
+                tabId: details.tabId
+             },
             func: () => {
-                const nsfwSubredditPopup = "configured-xpromo-blocking_xpromo_nsfw_blocking_desktop"; //Subreddit popup
-                const nsfwSubredditPopup2 = "configured-xpromo-blocking_xpromo_nsfw_blocking"; //On mobile, the popup has a different id
-                const loginUpsell = "desktop-dynamic-upsell-dialog"; // Login popup
-                const promptContainerTagName = "xpromo-nsfw-blocking-container" // Standalone post popup
-
-                // Check if the popup gets added to the page
-                const observer = new MutationObserver((mutations) => {
-                    for (const mutation of mutations) {
-                        for (const node of mutation.addedNodes) {
-                            if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
-                            // Check the node itself
-
-                            if (node.id === nsfwSubredditPopup || node.id === nsfwSubredditPopup2 || node.id === loginUpsell) {
-                                node.remove();
-                                continue;
-                            }
-
-                            // Standalone posts
-                            if (node.tagName === promptContainerTagName) {
-
-                                node.shadowRoot.querySelector?.(".prompt").remove()
-                            }
-
-
-                            // Check descendants
-                            const target = node.querySelector?.(`#${CSS.escape(nsfwSubredditPopup)}`);
-                            if (target) {
-                                target.remove();
-                            }
-                            const target2 = node.querySelector?.(promptContainerTagName)
-                            if (target2 && target2.shadowRoot) {
-                                target2.shadowRoot.querySelector?.(".prompt").remove()
-                            }
-
-                        }
-                    }
-                });
-
-                observer.observe(document.documentElement, {
-                    childList: true,
-                    subtree: true
-                });
-
-                // If the element is already there, just remove it
-                if (document.getElementById(nsfwSubredditPopup)) {
-                    document.getElementById(nsfwSubredditPopup).remove()
-                }
-                if (document.querySelector(promptContainerTagName)) {
-                    document.querySelector(promptContainerTagName).shadowRoot.querySelector(".prompt").remove()
-                }
-                if (document.getElementById(nsfwSubredditPopup2)) {
-                    document.getElementById(nsfwSubredditPopup2).remove()
-                }
-                Array.from(document.querySelectorAll("style")).filter(item => item.innerText?.includes(".rpl-scroll-lock"))[0]?.remove()
-
-                // If should unblur media on reddit, remove the style that blurs media
-                browser.storage.local.get('redditSetting').then((result) => {
-                    if (result['redditSetting'] === "unblur") {
+                document.querySelector("xpromo-nsfw-blocking-container")?.shadowRoot.querySelector?.(".prompt").remove()
+                document.body.classList.remove("rpl-scroll-lock")
+            },
+            world: "MAIN"
+        });
+        // If should unblur media on reddit, remove the style that blurs media
+        browser.storage.local.get('redditSetting').then((result) => {
+            if (result['redditSetting'] === "unblur") {
+                browser.scripting.executeScript({
+                    target: {
+                        tabId: details.tabId,
+                    },
+                    func: () => {
                         Array.from(document.querySelectorAll("shreddit-blurred-container[blurred]")).forEach(container => {
                             container.removeAttribute("blurred");
                         });
-                    }
-                });
+                        // Unblur right rail
 
-            },
+                        document.querySelector("pdp-right-rail")?.querySelectorAll("reddit-pdp-right-rail-post").forEach(post=>{
+                            post.querySelector("div[data-testid='post-thumbnail'")?.querySelector("img")?.setAttribute("style","")
+                            //18+ shadow
+                            post.querySelector("div[data-testid='post-thumbnail'")?.querySelector("div")?.remove()
+                        })
+                    }
+                })
+            }
         });
 
+
     },
-    { urls: ["*://*.redditstatic.com/*"] },
+    { urls: ["*://*.reddit.com/svc/shreddit/events"] },
     []
-);
-
-
-const TEST_IDS_TO_REMOVE = [
-    "nsfw-bypassable-modal-client-css",
-    "experiences-client-css"
-];
-
-browser.webRequest.onBeforeRequest.addListener(
-    (details) => {
-        console.log("Main subreddit request intercepted:", details.url);
-        const filter = browser.webRequest.filterResponseData(details.requestId);
-
-        const decoder = new TextDecoder("utf-8");
-        const encoder = new TextEncoder();
-
-        const chunks = [];
-
-        filter.ondata = (event) => {
-            chunks.push(event.data);
-        };
-
-        filter.onstop = () => {
-            try {
-                // Combine all chunks
-                const totalLength = chunks.reduce(
-                    (sum, chunk) => sum + chunk.byteLength,
-                    0
-                );
-
-                const merged = new Uint8Array(totalLength);
-
-                let offset = 0;
-                for (const chunk of chunks) {
-                    merged.set(new Uint8Array(chunk), offset);
-                    offset += chunk.byteLength;
-                }
-
-                const html = decoder.decode(merged);
-
-                // Parse HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-
-                // Remove matching style tags
-                doc.head
-                    .querySelectorAll("style[data-testid]")
-                    .forEach((styleEl) => {
-                        if (
-                            TEST_IDS_TO_REMOVE.includes(
-                                styleEl.getAttribute("data-testid")
-                            )
-                        ) {
-                            console.log("Removing from response", styleEl)
-                            styleEl.remove();
-                        }
-                    });
-
-                // Serialize back to HTML
-                const modifiedHtml =
-                    "<!DOCTYPE html>\n" +
-                    doc.documentElement.outerHTML;
-
-                filter.write(
-                    encoder.encode(modifiedHtml)
-                );
-            } catch (err) {
-                console.error(err);
-
-                // Fallback: pass original response through
-                filter.write(merged);
-            }
-
-            filter.close();
-        };
-    },
-    {
-        urls: ["*://*.reddit.com/r/*"], types: ["main_frame"]
-    },
-    ["blocking"]
 );
